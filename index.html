@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>AuditLex: Контракты & Аудит | Корейский язык</title>
+    <style>
+        :root {
+            --bg-page: #f0f4f9; --card-bg: #ffffff; --text-primary: #1a2c3e; --text-secondary: #2c5282;
+            --accent: #096b8f; --accent-soft: #e6f0f5; --border: #cbdbe0; --shadow: rgba(0,0,0,0.08);
+            --header-bg: #ffffffcc; --icon-fav: #e6a017; --nav-btn: #dee6ef; --footer-text: #5a6e7c;
+            --example-bg: #f7fafc; --new-badge: #8b5cf6;
+            --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+        }
+        body.dark {
+            --bg-page: #121826; --card-bg: #1e2a36; --text-primary: #eef2ff; --text-secondary: #bbd4f0;
+            --accent: #5da5c4; --accent-soft: #1f2e3c; --border: #334155; --shadow: rgba(0,0,0,0.4);
+            --header-bg: #121826cc; --nav-btn: #2a3748; --footer-text: #8da0b5; --example-bg: #17212b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', 'Roboto', sans-serif;
+            background: var(--bg-page); color: var(--text-primary); padding: 0 14px 28px; min-height: 100vh;
+            line-height: 1.5; -webkit-font-smoothing: antialiased;
+        }
+        
+        
+        /* Шапка: скрытие без анимации и без смещения */
+        .header {
+            position: relative; top: 0; left: 0; right: 0; 
+            background: var(--header-bg); 
+            padding: 12px 18px; border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 12px var(--shadow);
+            z-index: 999;
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            visibility: visible;
+            opacity: 1;
+            transition: visibility 0s linear 0s, opacity 0s linear;
+        }
+       
+        h1 { font-size: 1.65rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), #2c8faa); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .sub { font-size: 0.72rem; color: var(--footer-text); margin-top: 3px; }
+        .theme-toggle {
+            background: var(--nav-btn); border: none; padding: 8px 15px; border-radius: 40px;
+            font-weight: 600; cursor: pointer; color: var(--text-primary); font-size: 0.82rem;
+            transition: var(--transition);
+        }
+        .theme-toggle:hover { transform: scale(1.04); }
+        
+        .topics-scroll {
+            display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto;
+            padding: 4px 0 8px; scrollbar-width: thin; scroll-snap-type: x mandatory;
+            cursor: grab;
+        }
+        .topics-scroll:active { cursor: grabbing; }
+        .topics-scroll::-webkit-scrollbar { height: 4px; }
+        .topics-scroll::-webkit-scrollbar-track { background: var(--border); border-radius: 4px; }
+        .topics-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        .topic-btn {
+            flex: 0 0 auto; background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 100px; padding: 6px 14px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; color: var(--text-secondary); transition: var(--transition);
+            white-space: nowrap; box-shadow: 0 1px 3px var(--shadow); scroll-snap-align: start;
+        }
+        .topic-btn:hover { transform: translateY(-1px); background: var(--accent-soft); }
+        .topic-btn.active {
+            background: var(--accent); color: white; border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(9,107,143,0.25);
+        }
+        .topic-star { background: var(--icon-fav); color: #1e2f3e; }
+        body.dark .topic-star { color: #1a2a3a; }
+        
+        .progress-wrap { margin: 4px 4px 14px; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--footer-text); margin-bottom: 5px; font-weight: 500; }
+        .progress-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #2c8faa); border-radius: 3px; transition: width 0.3s ease; width: 0%; }
+        
+        .flashcard {
+            background: var(--card-bg); border-radius: 44px; padding: 22px 18px 26px;
+            box-shadow: 0 16px 38px var(--shadow); border: 1px solid var(--border);
+            margin: 0 0 20px; position: relative; overflow: hidden;
+        }
+        .flashcard::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--accent), #2c8faa, var(--accent)); opacity: 0.85;
+        }
+        .card-top { text-align: center; margin-bottom: 6px; animation: slideIn 0.25s ease; }
+        @keyframes slideIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+        
+        .term-korean {
+            font-size: clamp(1.5rem, 6vw, 2.2rem);
+            font-weight: 800; line-height: 1.4;
+            color: var(--text-primary); font-family: 'Noto Sans KR', system-ui;
+            margin: 6px 0 12px; padding: 18px 12px; background: var(--accent-soft);
+            border-radius: 36px; cursor: pointer; transition: var(--transition);
+            word-break: break-word;
+            overflow-wrap: break-word;
+            text-align: center;
+        }
+        .term-korean:hover { transform: scale(1.01); background: var(--accent-soft); }
+        .term-korean:active { transform: scale(0.995); }
+        
+        .hint-english {
+            font-size: 1.21rem; font-weight: 600; color: var(--accent);
+            background: var(--bg-page); padding: 10px 16px; border-radius: 34px;
+            display: inline-block; border: 1px dashed var(--border); letter-spacing: 0.1px;
+            max-width: 100%;
+        }
+        
+        .accordion { margin: 14px 0; border-radius: 26px; overflow: hidden; }
+        .accordion-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: var(--accent-soft); cursor: pointer;
+            border: 1px solid var(--border); border-radius: 26px; transition: var(--transition);
+            font-weight: 600; color: var(--text-primary);
+        }
+        .accordion-header:hover { background: rgba(9,107,143,0.1); }
+        .accordion-header.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+        .accordion-icon { font-size: 1rem; transition: transform 0.2s ease; }
+        .accordion-header.open .accordion-icon { transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: var(--card-bg); border: 1px solid var(--border); border-top: none; border-radius: 0 0 26px 26px; }
+        .accordion-content.open { max-height: 200px; }
+        .accordion-inner { padding: 16px 18px; }
+        .translation-text {
+            font-size: 1.43rem; font-weight: 700; text-align: center; color: var(--text-primary);
+            word-break: break-word;
+        }
+        
+        .example-section { margin-top: 16px; }
+        .example-label {
+            font-weight: 700; font-size: 0.77rem; text-transform: uppercase; letter-spacing: 1.3px;
+            color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .example-preview {
+            background: var(--example-bg); border-radius: 26px; padding: 14px 16px;
+            border: 1px solid var(--border); cursor: pointer; transition: var(--transition);
+        }
+        .example-preview:hover { box-shadow: 0 4px 12px var(--shadow); }
+        .example-kor {
+            font-size: 1.155rem; font-family: 'Noto Sans KR', system-ui; color: var(--text-primary);
+            font-weight: 500; line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            margin-bottom: 0;
+        }
+        .example-hint {
+            text-align: right; font-size: 0.8rem; color: var(--accent); margin-top: 6px;
+            font-weight: 600; display: flex; justify-content: flex-end; gap: 4px;
+        }
+        .example-expanded {
+            max-height: 0; overflow: hidden; transition: max-height 0.35s ease;
+            background: var(--example-bg); border: 1px solid var(--border); border-radius: 26px;
+        }
+        .example-expanded.open { max-height: 280px; }
+        .example-expanded-inner { padding: 14px 16px; }
+        .example-ru {
+            font-size: 1.045rem; color: var(--text-secondary); line-height: 1.5;
+            border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 2px;
+            word-break: break-word;
+        }
+        
+        /* УМЕНЬШЕННЫЕ НАВИГАЦИОННЫЕ КНОПКИ — стали компактнее на ~15% */
+        .nav-row { 
+            display: flex; 
+            justify-content: space-between; 
+            gap: 8px; 
+            margin: 18px 0 8px; 
+        }
+        .nav-btn {
+            background: var(--nav-btn); 
+            border: none; 
+            padding: 8px 0;  /* было 12px 0 — уменьшили */
+            border-radius: 48px;  /* было 58px — чуть меньше */
+            font-size: 1.5rem;  /* было 1.8rem — уменьшили */
+            cursor: pointer; 
+            flex: 0.8;  /* было 1 — сделали компактнее */
+            text-align: center;
+            color: var(--text-primary); 
+            font-weight: 600; 
+            transition: var(--transition);
+        }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px var(--shadow); }
+        .nav-btn:active { transform: scale(0.985); }
+        .fav-btn {
+            background: var(--nav-btn); 
+            border: none; 
+            font-size: 1.5rem;  /* было 1.8rem — уменьшили */
+            font-weight: 600;
+            padding: 8px 0;  /* было 12px 0 — уменьшили */
+            border-radius: 48px;  /* было 58px — чуть меньше */
+            cursor: pointer; 
+            flex: 0.8;  /* было 1.1 — сделали компактнее */
+            text-align: center;
+            color: var(--text-primary); 
+            transition: var(--transition);
+        }
+        .fav-btn.fav-active {
+            background: var(--icon-fav); 
+            color: #1e2f3e; 
+            animation: starPop 0.25s ease;
+        }
+        @keyframes starPop { 0%{transform:scale(1)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+        
+        /* Блок дополнительных кнопок — гармонирует с навигацией */
+        .extra-actions { 
+            display: flex; 
+            gap: 8px; 
+            margin-top: 12px;  /* было 14px — чуть уменьшили */
+            justify-content: center; 
+        }
+        .action-btn {
+            background: var(--nav-btn); 
+            border: none; 
+            padding: 8px 12px;  /* было 8px 14px — чуть уже */
+            border-radius: 46px;
+            font-size: 0.78rem;  /* было 0.8rem — чуть меньше */
+            font-weight: 600; 
+            cursor: pointer; 
+            color: var(--text-primary);
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            transition: var(--transition);
+        }
+        .action-btn:hover { transform: translateY(-1px); background: var(--accent-soft); }
+        
+        .footer-note {
+            margin-top: 26px; text-align: center; background: var(--accent-soft);
+            border-radius: 32px; padding: 18px 14px; font-size: 0.86rem; color: var(--footer-text);
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .quote { font-style: italic; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); line-height: 1.4; }
+        .daily-quote { font-size: 0.75rem; margin-top: 6px; opacity: 0.9; }
+        
+        @media (max-width: 480px) {
+            .header { padding: 10px 16px; } h1 { font-size: 1.5rem; }
+            .term-korean { font-size: clamp(1.3rem, 5.5vw, 2rem); padding: 14px 10px; }
+            .hint-english { font-size: 1rem; }
+            .translation-text { font-size: 1.3rem; }
+            .example-kor { font-size: 1rem; }
+            .flashcard { padding: 18px 14px 22px; }
+            /* Адаптация уменьшенных кнопок под мобильные */
+            .nav-btn, .fav-btn { font-size: 1.3rem; padding: 6px 0; flex: 0.7; }
+            .action-btn { padding: 6px 10px; font-size: 0.72rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="header">
+        <div>
+            <h1>📘 AuditLex</h1>
+            <div class="sub">계약 · 감사 · 책임</div>
+        </div>
+        <button class="theme-toggle" id="themeToggle">🌓 Тема</button>
+    </header>
+
+    <nav class="topics-scroll" id="topicsContainer"></nav>
+
+    <div class="progress-wrap">
+        <div class="progress-label"><span>Прогресс</span><span id="progressText">1 / 28</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <main class="flashcard">
+        <div class="card-top">
+            <div class="term-korean" id="koreanTerm">—</div>
+            <div class="hint-english" id="englishHint">💡 разбор слова</div>
+        </div>
+        
+        <section class="accordion" id="transSection">
+            <button class="accordion-header" id="transToggle" aria-expanded="false">
+                <span>🇷🇺 Показать перевод</span><span class="accordion-icon">▼</span>
+            </button>
+            <div class="accordion-content" id="transContent">
+                <div class="accordion-inner">
+                    <div class="translation-text" id="transText"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="example-section">
+            <div class="example-label">📌 В КОНТЕКСТЕ</div>
+            <div class="example-preview" id="exPreview" role="button" tabindex="0">
+                <div class="example-kor" id="exKor">계약서 조항 예시</div>
+                <div class="example-hint">▶ Показать перевод примера</div>
+            </div>
+            <div class="example-expanded" id="exExpanded">
+                <div class="example-expanded-inner">
+                    <div class="example-ru" id="exRu">Пример использования в контексте</div>
+                </div>
+            </div>
+        </section>
+
+        <nav class="nav-row">
+            <button class="nav-btn" id="prevBtn" title="Предыдущий">◀</button>
+            <button class="fav-btn" id="favBtn" title="Избранное">☆</button>
+            <button class="nav-btn" id="nextBtn" title="Следующий">▶</button>
+        </nav>
+        
+        <div class="extra-actions">
+            <button class="action-btn" id="randomBtn" title="Случайная карточка">🎲 Случайная</button>
+            <button class="action-btn" id="resetBtn" title="Сброс к первому">🔄 Сброс</button>
+        </div>
+    </main>
+
+    <footer class="footer-note" id="quoteContainer" title="Нажмите для новой цитаты">
+        <div class="quote" id="dailyQuote">"정확한 용어가 계약의 힘입니다"<br>— Точный термин — сила договора</div>
+        <div class="daily-quote">🔍 공인회계사법 · 감사조서 · 배상책임 · 연결재무제표 — стань экспертом!</div>
+    </footer>
+</div>
+
+<script>
+// ==================== ПОЛНЫЙ СПИСОК ТЕРМИНОВ (138+ С РУССКИМИ ПОДСКАЗКАМИ) ====================
+const fullGlossary = [
+    { kor: "공인회계사법", rus: "Закон о сертифицированных бухгалтерах", hint_ru: "공인 (гос. аттестат) + 회계사 (бухгалтер) + 법 (закон)", topic: "law_duty", exKor: "공인회계사법에 따라 감사인은 독립성을 유지해야 한다.", exRus: "Согласно Закону, аудитор должен сохранять независимость." },
+    { kor: "귀책사유", rus: "вина / причина ответственности", hint_ru: "귀책 (приписывание вины) + 사유 (причина)", topic: "law_duty", exKor: "계약 위반의 귀책사유가 회사에 있는 경우 손해배상 책임이 발생한다.", exRus: "Если основание ответственности лежит на компании, возникает обязанность возместить убытки." },
+    { kor: "면책", rus: "освобождение от ответственности", hint_ru: "면 (освобождение) + 책 (ответственность)", topic: "law_duty", exKor: "감사인은 중대한 과실이 없는 한 면책될 수 있다.", exRus: "Аудитор может быть освобождён от ответственности при отсутствии грубой неосторожности." },
+    { kor: "배상책임", rus: "ответственность за возмещение убытков", hint_ru: "배상 (компенсация) + 책임 (обязанность)", topic: "law_duty", exKor: "재무제표 오류로 인한 배상책임은 감사인이 질 수 있습니다.", exRus: "Аудитор может нести ответственность за возмещение убытков из-за ошибок." },
+    { kor: "고의또는중대한과실", rus: "умышленные действия или грубая неосторожность", hint_ru: "고의 (умысел) + 또는 (или) + 중대한 (грубый) + 과실 (неосторожность)", topic: "law_duty", exKor: "고의또는중대한과실이 있을 경우 면책 조항이 적용되지 않는다.", exRus: "При умысле или грубой неосторожности освобождение не применяется." },
+    { kor: "관할법원", rus: "компетентный суд", hint_ru: "관할 (юрисдикция) + 법원 (суд)", topic: "law_duty", exKor: "분쟁 발생 시 관할법원은 서울중앙지방법원으로 한다.", exRus: "В случае спора компетентным судом является Центральный окружной суд Сеула." },
+    { kor: "구속력", rus: "обязательная сила", hint_ru: "구속 (связывание) + 력 (сила)", topic: "law_duty", exKor: "당사자가 서명한 계약은 법적 구속력을 가진다.", exRus: "Договор, подписанный сторонами, имеет обязательную силу." },
+    { kor: "무효", rus: "недействительный", hint_ru: "무 (не-) + 효 (действенность)", topic: "law_duty", exKor: "법률을 위반한 조항은 무효로 간주됩니다.", exRus: "Положения, нарушающие закон, считаются недействительными." },
+    { kor: "귀속되는것으로한다", rus: "считается принадлежащим", hint_ru: "귀속 (принадлежность) + 되는 것으로 한다 (считается)", topic: "law_duty", exKor: "계약상 권리는 회사에 귀속되는것으로한다.", exRus: "Права по договору считаются принадлежащими компании." },
+    { kor: "서면동의", rus: "письменное согласие", hint_ru: "서면 (письменная форма) + 동의 (согласие)", topic: "law_duty", exKor: "계약 변경은 서면동의를 받아야 한다.", exRus: "Изменение договора требует письменного согласия." },
+    { kor: "법적또는직업적공개", rus: "юридическое или профессиональное раскрытие", hint_ru: "법적 (юридический) + 또는 (или) + 직업적 (профессиональный) + 공개 (раскрытие)", topic: "law_duty", exKor: "법적또는직업적공개 의무가 있는 경우 정보를 제공할 수 있다.", exRus: "Информация может быть предоставлена при наличии обязанности раскрытия." },
+    { kor: "관련법규", rus: "соответствующие нормативные акты", hint_ru: "관련 (связанный) + 법규 (законы и правила)", topic: "law_duty", exKor: "관련법규를 준수하여 업무를 수행해야 한다.", exRus: "Работа выполняется с соблюдением нормативных актов." },
+    { kor: "관련법령의개정", rus: "изменение соответствующего законодательства", hint_ru: "관련법령 (соответствующее законодательство) + 의 개정 (изменение)", topic: "law_duty", exKor: "관련법령의개정 시 계약 조건을 재검토한다.", exRus: "При изменении законодательства условия пересматриваются." },
+    { kor: "계약해지사유", rus: "основание для расторжения договора", hint_ru: "계약 (договор) + 해지 (расторжение) + 사유 (причина)", topic: "law_duty", exKor: "계약해지사유가 발생하면 서면으로 통지한다.", exRus: "При возникновении основания направляется уведомление." },
+    { kor: "소멸된다", rus: "прекращается", hint_ru: "소멸 (исчезновение) + 된다 (становится)", topic: "law_duty", exKor: "계약 기간이 만료되면 권리의무가 소멸된다.", exRus: "По истечении срока права и обязанности прекращаются." },
+    { kor: "고의또는과실", rus: "умысел или неосторожность", hint_ru: "고의 (умысел) + 또는 (или) + 과실 (неосторожность)", topic: "law_duty", exKor: "고의또는과실로 인한 손해는 배상해야 한다.", exRus: "Убытки, причинённые умышленно или по неосторожности, возмещаются." },
+    { kor: "손해를가하다", rus: "причинять убытки", hint_ru: "손해 (убыток) + 를 가하다 (нанести)", topic: "law_duty", exKor: "부정행위로 회사에 손해를가하다 경우 법적 책임을 진다.", exRus: "Причинение убытков компании влечёт ответственность." },
+    { kor: "중대한과실", rus: "грубая неосторожность", hint_ru: "중대한 (серьёзный) + 과실 (неосторожность)", topic: "law_duty", exKor: "중대한과실로 감사보고서가 왜곡되면 책임을 진다.", exRus: "Искажение отчёта по грубой неосторожности влечёт ответственность." },
+    { kor: "방어에소요되는비용", rus: "расходы на защиту", hint_ru: "방어 (защита) + 에 소요되는 (затрачиваемые на) + 비용 (расходы)", topic: "law_duty", exKor: "소송 시 방어에소요되는비용은 계약에 따라 부담한다.", exRus: "Расходы на защиту в суде распределяются по договору." },
+    { kor: "소송결과지게되는책임", rus: "ответственность по результатам судебного разбирательства", hint_ru: "소송결과 (результат суда) + 지게되는 (которую несут) + 책임 (ответственность)", topic: "law_duty", exKor: "소송결과지게되는책임은 패소 당사자가 부담한다.", exRus: "Ответственность по итогам суда несёт проигравшая сторона." },
+    { kor: "배상책임을지다", rus: "нести ответственность за возмещение", hint_ru: "배상책임 (обязанность возместить) + 을 지다 (нести)", topic: "law_duty", exKor: "감사인은 과실로 인한 손실에 대해 배상책임을지다.", exRus: "Аудитор несёт ответственность за возмещение убытков." },
+    { kor: "법적인판단이내려지는경우", rus: "в случае вынесения юридического решения", hint_ru: "법적인 (юридическое) + 판단 (решение) + 이 내려지는 경우 (случай вынесения)", topic: "law_duty", exKor: "법적인판단이내려지는경우 계약 조건이 변경될 수 있다.", exRus: "В случае решения суда условия могут измениться." },
+    { kor: "위약행위또는위법행위", rus: "нарушение договора или незаконное действие", hint_ru: "위약 (нарушение договора) + 행위 (действие) + 또는 (или) + 위법 (незаконное) + 행위", topic: "law_duty", exKor: "위약행위또는위법행위 시 계약이 해지될 수 있다.", exRus: "Договор может быть расторгнут при нарушении условий." },
+    { kor: "계약의성립을입증하기", rus: "для подтверждения заключения договора", hint_ru: "계약의성립 (заключение договора) + 을 입증하기 (для подтверждения)", topic: "law_duty", exKor: "계약의성립을입증하기 위해 서면과 증거를 보관한다.", exRus: "Для подтверждения хранятся документы и доказательства." },
+    { kor: "계약당사자간에분쟁이", rus: "спор между сторонами договора", hint_ru: "계약당사자 (стороны договора) + 간에 (между) + 분쟁이 (спор)", topic: "law_duty", exKor: "계약당사자간에분쟁이 발생하면 협의를 우선한다.", exRus: "При споре приоритет отдаётся переговорам." },
+    { kor: "소의제기는", rus: "подача иска", hint_ru: "소 (иск) + 의 제기 (подача)", topic: "law_duty", exKor: "소의제기는 관할법원에 서면으로 한다.", exRus: "Иск подаётся в компетентный суд письменно." },
+    { kor: "피청구인의사무소를관할하는", rus: "компетентный по месту нахождения офиса ответчика", hint_ru: "피청구인 (ответчик) + 의 사무소 (офис) + 를 관할하는 (юрисдикция которого)", topic: "law_duty", exKor: "피청구인의사무소를관할하는 법원에서 소송이 진행된다.", exRus: "Процесс проходит в суде по месту ответчика." },
+    { kor: "법원에하는것으로", rus: "считается поданным в суд", hint_ru: "법원 (суд) + 에 하는 것으로 (считается сделанным в)", topic: "law_duty", exKor: "등기우편으로 발송하면 법원에하는것으로 간주된다.", exRus: "Отправка заказным письмом считается подачей в суд." },
+    // Время, сроки (time)
+    { kor: "사업연도", rus: "отчётный год", hint_ru: "사업 (бизнес) + 연도 (год)", topic: "time", exKor: "당사의 사업연도는 1월 1일부터 12월 31일까지입니다.", exRus: "Отчётный год: 1 января — 31 декабря." },
+    { kor: "정기총회", rus: "очередное общее собрание", hint_ru: "정기 (регулярный) + 총회 (общее собрание)", topic: "time", exKor: "정기총회에서 재무제표 승인과 감사인 선임이 이루어집니다.", exRus: "На собрании утверждается отчётность и назначается аудитор." },
+    { kor: "초도감사", rus: "первоначальный аудит", hint_ru: "초도 (начальный) + 감사 (аудит)", topic: "time", exKor: "초도감사에서는 이전 기간의 잔액을 특히 주의 깊게 검토해야 한다.", exRus: "При первоначальном аудите проверяются остатки прошлых периодов." },
+    { kor: "지체없이그사실을통지", rus: "незамедлительное уведомление", hint_ru: "지체없이 (без задержки) + 그 사실을 (об этом факте) + 통지 (уведомить)", topic: "time", exKor: "위반 사실을 발견한 즉시 지체없이그사실을통지해야 합니다.", exRus: "При нарушении требуется незамедлительное уведомление." },
+    { kor: "전기조서", rus: "документы предыдущего периода", hint_ru: "전기 (предыдущий период) + 조서 (протокол, записи)", topic: "time", exKor: "전기조서를 참고하여 현재 감사를 수행한다.", exRus: "Аудит проводится с учётом документов прошлого периода." },
+    { kor: "후속감사인", rus: "последующий аудитор", hint_ru: "후속 (последующий) + 감사인 (аудитор)", topic: "time", exKor: "후속감사인은 전기감사인과 정보를 공유해야 한다.", exRus: "Новый аудитор обменивается информацией с предыдущим." },
+    { kor: "해당사업연도", rus: "соответствующий отчётный год", hint_ru: "해당 (соответствующий) + 사업연도 (отчётный год)", topic: "time", exKor: "해당사업연도의 재무제표를 기준으로 감사를 진행한다.", exRus: "Аудит проводится на основе отчётности соответствующего года." },
+    { kor: "계약이행이불가능", rus: "невозможность исполнения договора", hint_ru: "계약 (договор) + 이행 (исполнение) + 이 불가능 (невозможно)", topic: "time", exKor: "천재지변으로 계약이행이불가능 경우 계약을 해지할 수 있다.", exRus: "При форс-мажоре договор может быть расторгнут." },
+    { kor: "감사계약기간만료이후라도", rus: "даже после окончания срока договора на аудит", hint_ru: "감사계약 (договор аудита) + 기간만료 (истечение срока) + 이후라도 (даже после)", topic: "time", exKor: "감사계약기간만료이후라도 비밀유지 의무는 계속된다.", exRus: "Конфиденциальность сохраняется после окончания договора." },
+    // Финансы (finance)
+    { kor: "재무제표", rus: "финансовая отчётность", hint_ru: "재무 (финансы) + 제표 (составленная таблица)", topic: "finance", exKor: "감사인은 재무제표가 적정하게 표시되었는지 의견을 제시한다.", exRus: "Аудитор выражает мнение о правильности отчётности." },
+    { kor: "연결재무제표", rus: "консолидированная отчётность", hint_ru: "연결 (соединение) + 재무제표 (отчётность)", topic: "finance", exKor: "연결재무제표에는 모회사와 종속회사의 재무정보가 통합됩니다.", exRus: "Объединяет информацию материнской и дочерних компаний." },
+    { kor: "회계추정", rus: "учётная оценка", hint_ru: "회계 (бухгалтерия) + 추정 (оценка)", topic: "finance", exKor: "회계추정에는 손상차손이나 감가상각 기간의 결정이 포함됩니다.", exRus: "Включает определение обесценения или срока амортизации." },
+    { kor: "착수금", rus: "авансовый платёж", hint_ru: "착수 (начало работ) + 금 (деньги)", topic: "finance", exKor: "계약 체결 시 착수금으로 전체 보수의 30%를 지급합니다.", exRus: "При заключении выплачивается аванс 30%." },
+    { kor: "유가증권", rus: "ценные бумаги", hint_ru: "유가 (ценность) + 증권 (ценная бумага)", topic: "finance", exKor: "유가증권의 신규상장을 위해서는 증권신고서를 제출해야 한다.", exRus: "Для размещения бумаг подаётся регистрационное заявление." },
+    { kor: "상기한재무제표", rus: "вышеуказанная отчётность", hint_ru: "상기한 (вышеуказанный) + 재무제표 (отчётность)", topic: "finance", exKor: "상기한재무제표에 대한 감사의견은 무한의견이다.", exRus: "Мнение по отчётности — безоговорочно положительное." },
+    { kor: "지분법", rus: "метод долевого участия", hint_ru: "지분 (доля) + 법 (метод)", topic: "finance", exKor: "종속회사에 대한 투자는 지분법으로 평가한다.", exRus: "Инвестиции оцениваются методом долевого участия." },
+    { kor: "공급가액", rus: "стоимость без НДС", hint_ru: "공급 (поставка) + 가액 (стоимость)", topic: "finance", exKor: "계약 금액은 공급가액 기준으로 산정된다.", exRus: "Сумма рассчитывается без учёта НДС." },
+    { kor: "정산", rus: "окончательный расчёт", hint_ru: "정 (окончательный) + 산 (расчёт)", topic: "finance", exKor: "사업 종료 후 30일 이내에 정산을 완료해야 한다.", exRus: "Расчёт завершается в течение 30 дней." },
+    { kor: "중도금", rus: "промежуточный платёж", hint_ru: "중도 (середина пути) + 금 (деньги)", topic: "finance", exKor: "감사 진행 중 중도금으로 보수의 40%를 지급한다.", exRus: "В ходе аудита выплачивается промежуточный платёж." },
+    { kor: "잔금", rus: "окончательный платёж", hint_ru: "잔 (остаток) + 금 (деньги)", topic: "finance", exKor: "감사보고서 제출 후 잔금을 지급한다.", exRus: "Окончательный платёж после представления отчёта." },
+    { kor: "신규상장", rus: "первичное размещение", hint_ru: "신규 (новый) + 상장 (листинг)", topic: "finance", exKor: "신규상장을 위해 재무제표의 적정성을 검증한다.", exRus: "Для IPO проверяется достоверность отчётности." },
+    { kor: "유가증권의신규상장", rus: "первичное размещение ценных бумаг", hint_ru: "유가증권 (ценные бумаги) + 의 신규상장 (IPO)", topic: "finance", exKor: "유가증권의신규상장 시 감사인의 확인서가 필요하다.", exRus: "При размещении требуется подтверждение аудитора." },
+    { kor: "주석을포함한다", rus: "включает примечания", hint_ru: "주석 (примечание) + 을 포함한다 (включает)", topic: "finance", exKor: "재무제표는 주석을포함해야 완전한 것으로 간주된다.", exRus: "Отчётность считается полной при наличии примечаний." },
+    { kor: "언급되지않은기타정보", rus: "иная неупомянутая информация", hint_ru: "언급되지않은 (неупомянутая) + 기타 (иная) + 정보 (информация)", topic: "finance", exKor: "언급되지않은기타정보가 중요할 경우 추가 공시가 필요하다.", exRus: "При важной неупомянутой информации требуется раскрытие." },
+    // Аудит (audit)
+    { kor: "외부감사계약서", rus: "договор внешнего аудита", hint_ru: "외부 (внешний) + 감사 (аудит) + 계약서 (договор)", topic: "audit", exKor: "외부감사계약서에는 감사범위와 보수, 책임조항이 명시됩니다.", exRus: "Указываются объём, вознаграждение и ответственность." },
+    { kor: "감사조서", rus: "рабочие документы аудитора", hint_ru: "감사 (аудит) + 조서 (протокол)", topic: "audit", exKor: "감사조서는 감사 증거와 절차를 문서화한 필수 기록물입니다.", exRus: "Обязательные записи, документирующие доказательства." },
+    { kor: "표본시사", rus: "выборочная проверка", hint_ru: "표본 (образец) + 시사 (проверка)", topic: "audit", exKor: "표본시사를 통해 감사 증거를 수집합니다.", exRus: "Для сбора доказательств используется выборка." },
+    { kor: "합리적확신", rus: "разумная уверенность", hint_ru: "합리적 (разумный) + 확신 (уверенность)", topic: "audit", exKor: "감사인은 재무제표에 중요한 왜곡표시가 없음에 대해 합리적확신을 얻어야 한다.", exRus: "Аудитор получает разумную уверенность в отсутствии искажений." },
+    { kor: "독립성을훼손", rus: "подрыв независимости", hint_ru: "독립성 (независимость) + 을 훼손 (повредить)", topic: "audit", exKor: "금전적 대여는 독립성을훼손할 수 있는 위험 요인입니다.", exRus: "Кредитование может подрывать независимость." },
+    { kor: "왜곡표시", rus: "искажение представления", hint_ru: "왜곡 (искажение) + 표시 (показ)", topic: "audit", exKor: "감사인은 의도적이거나 의도하지 않은 왜곡표시를 탐지해야 합니다.", exRus: "Выявляются умышленные или случайные искажения." },
+    { kor: "감사의뢰인", rus: "заказчик аудита", hint_ru: "감사 (аудит) + 의뢰인 (заказчик)", topic: "audit", exKor: "감사의뢰인은 필요한 자료를 적시에 제공해야 한다.", exRus: "Заказчик своевременно предоставляет материалы." },
+    { kor: "독립된감사인", rus: "независимый аудитор", hint_ru: "독립된 (независимый) + 감사인 (аудитор)", topic: "audit", exKor: "독립된감사인만이 객관적인 감사의견을 제시할 수 있다.", exRus: "Только независимый аудитор выразит объективное мнение." },
+    { kor: "전문가적적격성", rus: "профессиональная компетентность", hint_ru: "전문가적 (профессиональный) + 적격성 (квалификация)", topic: "audit", exKor: "감사인은 전문가적적격성을 유지하기 위해 지속적 교육을 받아야 한다.", exRus: "Аудитор проходит непрерывное обучение." },
+    { kor: "지배기구", rus: "органы управления", hint_ru: "지배 (управление) + 기구 (орган)", topic: "audit", exKor: "지배기구는 내부통제 시스템의 효과성을 감독한다.", exRus: "Органы контролируют эффективность внутреннего контроля." },
+    { kor: "내부회계관리제도의검토", rus: "проверка системы внутреннего бухгалтерского контроля", hint_ru: "내부 (внутренний) + 회계 (бухгалтерия) + 관리 (управление) + 제도 (система) + 의 검토 (проверка)", topic: "audit", exKor: "내부회계관리제도의검토는 감사의 필수 절차이다.", exRus: "Проверка контроля — обязательная процедура." },
+    { kor: "공정하게표시", rus: "справедливое представление", hint_ru: "공정하게 (справедливо) + 표시 (представление)", topic: "audit", exKor: "재무제표는 모든 중요한 측면에서 공정하게표시되어야 한다.", exRus: "Отчётность справедливо отражает аспекты." },
+    { kor: "감사보수", rus: "аудиторское вознаграждение", hint_ru: "감사 (аудит) + 보수 (вознаграждение)", topic: "audit", exKor: "감사보수는 업무량과 복잡성을 고려하여 산정된다.", exRus: "Вознаграждение зависит от объёма и сложности." },
+    { kor: "증거를검증", rus: "проверка доказательств", hint_ru: "증거 (доказательство) + 를 검증 (проверить)", topic: "audit", exKor: "감사인은 외부 확인서를 통해 증거를검증한다.", exRus: "Доказательства проверяются внешними подтверждениями." },
+    { kor: "부문감사인", rus: "аудитор сегмента", hint_ru: "부문 (сегмент) + 감사인 (аудитор)", topic: "audit", exKor: "부문감사인의 작업 결과를 주감사인이 검토한다.", exRus: "Главный аудитор проверяет результаты сегмента." },
+    { kor: "적절한공시", rus: "надлежащее раскрытие", hint_ru: "적절한 (надлежащий) + 공시 (раскрытие)", topic: "audit", exKor: "중요한 거래는 재무제표에 적절한공시되어야 한다.", exRus: "Существенные операции надлежит раскрыть." },
+    { kor: "전자공시", rus: "электронное раскрытие", hint_ru: "전자 (электронный) + 공시 (раскрытие)", topic: "audit", exKor: "DART 시스템을 통해 전자공시가 이루어집니다.", exRus: "Раскрытие через систему DART." },
+    { kor: "금융감독원에전자공시", rus: "электронное раскрытие в Управлении финансового надзора", hint_ru: "금융감독원 (финнадзор) + 에 전자공시 (электронное раскрытие)", topic: "audit", exKor: "재무제표는 금융감독원에전자공시해야 한다.", exRus: "Отчётность раскрывается в Управлении финнадзора." },
+    { kor: "잠재적이해관계", rus: "потенциальная заинтересованность", hint_ru: "잠재적 (потенциальный) + 이해관계 (заинтересованность)", topic: "audit", exKor: "감사인은 잠재적이해관계가 있는지 사전에 확인해야 한다.", exRus: "Аудитор заранее проверяет заинтересованность." },
+    { kor: "상당한불확실성", rus: "существенная неопределённость", hint_ru: "상당한 (существенный) + 불확실성 (неопределённость)", topic: "audit", exKor: "계속기업 가정에 상당한불확실성이 있는 경우 감사보고서에 명시한다.", exRus: "Неопределённость указывается в отчёте." },
+    { kor: "추가적분기검토", rus: "дополнительная проверка квартальной отчётности", hint_ru: "추가적 (дополнительный) + 분기 (квартал) + 검토 (проверка)", topic: "audit", exKor: "상장기업은 추가적분기검토를 받아야 한다.", exRus: "Публичные компании проходят квартальную проверку." },
+    { kor: "감리대상으로선정", rus: "выбор в качестве объекта надзора", hint_ru: "감리 (надзор) + 대상 (объект) + 으로 선정 (выбран)", topic: "audit", exKor: "품질관리 미흡 시 감리대상으로선정될 수 있다.", exRus: "При недостатках аудитор становится объектом надзора." },
+    { kor: "대외기관", rus: "внешние организации", hint_ru: "대외 (внешний) + 기관 (орган)", topic: "audit", exKor: "감사조서는 대외기관 요청 시 제출할 수 있다.", exRus: "Документы предоставляются внешним организациям." },
+    { kor: "실제투입한시간", rus: "фактически затраченное время", hint_ru: "실제 (фактический) + 투입한 (затраченный) + 시간 (время)", topic: "audit", exKor: "감사보수는 실제투입한시간을 기준으로 정산될 수 있다.", exRus: "Оплата может зависеть от фактического времени." },
+    { kor: "전반적인목적", rus: "общие цели", hint_ru: "전반적인 (общий) + 목적 (цель)", topic: "audit", exKor: "감사의 전반적인목적은 재무제표의 신뢰성 확보이다.", exRus: "Цель — обеспечение достоверности отчётности." },
+    { kor: "효과적으로달성", rus: "эффективное достижение", hint_ru: "효과적으로 (эффективно) + 달성 (достижение)", topic: "audit", exKor: "감사절차는 전반적인목적을 효과적으로달성하도록 설계된다.", exRus: "Процедуры разрабатываются для достижения целей." },
+    { kor: "내부적고유한계", rus: "внутренние присущие ограничения", hint_ru: "내부적 (внутренний) + 고유한 (присущий) + 계 (предел)", topic: "audit", exKor: "내부통제에는 내부적고유한계가 존재한다.", exRus: "Контроль имеет присущие ограничения." },
+    { kor: "위조변조허위", rus: "подделка, искажение, ложь", hint_ru: "위조 (подделка) + 변조 (искажение) + 허위 (ложь)", topic: "audit", exKor: "위조변조허위 문서 사용 시 법적 제재를 받는다.", exRus: "Поддельные документы влекут санкции." },
+    { kor: "직접또는간접적으로", rus: "прямо или косвенно", hint_ru: "직접 (прямо) + 또는 (или) + 간접적으로 (косвенно)", topic: "audit", exKor: "감사인은 직접또는간접적으로 이해관계가 없어야 한다.", exRus: "Аудитор не должен иметь интересов." },
+    { kor: "국가기관으로부터", rus: "от государственных органов", hint_ru: "국가기관 (госорганы) + 으로부터 (от)", topic: "audit", exKor: "국가기관으로부터 조사 요청 시 협조해야 한다.", exRus: "При запросе органов необходимо содействие." },
+    { kor: "고소고발또는손해배상청구", rus: "уголовное преследование или иск о возмещении убытков", hint_ru: "고소 (жалоба) + 고발 (обвинение) + 또는 (или) + 손해배상청구 (иск о возмещении)", topic: "audit", exKor: "부정감사 시 고소고발또는손해배상청구를 당할 수 있다.", exRus: "Недобросовестный аудит ведёт к искам или преследованию." },
+    { kor: "감사인의견을표명한", rus: "выразивший аудиторское мнение", hint_ru: "감사인의견 (аудиторское мнение) + 을 표명한 (выразивший)", topic: "audit", exKor: "감사인의견을표명한 보고서만 공시할 수 있다.", exRus: "Раскрывается только отчёт с мнением." },
+    { kor: "감사인을언급하고자할경우", rus: "в случае намерения упомянуть аудитора", hint_ru: "감사인 (аудитор) + 을 언급하고자 (намереваясь упомянуть) + 할 경우 (в случае)", topic: "audit", exKor: "광고에 감사인을언급하고자할경우 사전승인이 필요하다.", exRus: "Упоминание в рекламе требует согласия." },
+    { kor: "사전승인또는동의를얻어야", rus: "должен получить предварительное разрешение или согласие", hint_ru: "사전승인 (предварительное разрешение) + 또는 (или) + 동의 (согласие) + 를 얻어야 (должен получить)", topic: "audit", exKor: "감사조서 사본 제공 시 사전승인또는동의를얻어야 한다.", exRus: "Копия документов требует разрешения." },
+    { kor: "대조검토한후에", rus: "после сопоставления и проверки", hint_ru: "대조 (сопоставление) + 검토 (проверка) + 한 후에 (после того как)", topic: "audit", exKor: "대조검토한후에 최종보고서를 작성한다.", exRus: "Отчёт после сопоставления и проверки." },
+    { kor: "별개업무", rus: "отдельная работа", hint_ru: "별개 (отдельный) + 업무 (работа)", topic: "audit", exKor: "세무자문은 감사와 별개업무로 계약한다.", exRus: "Консультирование — отдельное задание." },
+    { kor: "별도의약정을체결", rus: "заключение отдельного соглашения", hint_ru: "별도의 (отдельный) + 약정 (соглашение) + 을 체결 (заключить)", topic: "audit", exKor: "추가 서비스는 별도의약정을체결해야 한다.", exRus: "Допуслуги требуют отдельного соглашения." },
+    { kor: "정보의검증입증", rus: "проверка и подтверждение информации", hint_ru: "정보 (информация) + 의 검증 (проверка) + 입증 (подтверждение)", topic: "audit", exKor: "정보의검증입증을 위해 외부 확인 절차를 수행한다.", exRus: "Информация проверяется внешними подтверждениями." },
+    { kor: "소송또는소송외적으로", rus: "в судебном или внесудебном порядке", hint_ru: "소송 (судебный процесс) + 또는 (или) + 소송외적으로 (внесудебно)", topic: "audit", exKor: "분쟁은 소송또는소송외적으로 해결할 수 있다.", exRus: "Спор решается в суде или мирно." },
+    { kor: "소유권은감사인에게있다", rus: "право собственности принадлежит аудитору", hint_ru: "소유권 (право собственности) + 은 감사인에게 있다 (принадлежит аудитору)", topic: "audit", exKor: "감사조서의 소유권은감사인에게있다.", exRus: "Права на документы у аудитора." },
+    { kor: "준용한다", rus: "применяется по аналогии", hint_ru: "준용 (аналогия) + 한다 (применяется)", topic: "audit", exKor: "명시되지 않은 사항은 관련법규를 준용한다.", exRus: "Вопросы решаются по аналогии с законом." },
+    { kor: "명시되지아니한사항", rus: "вопросы, не урегулированные в договоре", hint_ru: "명시되지 (не указанные) + 아니한 (не являются) + 사항 (вопросы)", topic: "audit", exKor: "명시되지아니한사항은 상호협의에 따라 정한다.", exRus: "Вопросы определяются по согласию." },
+    { kor: "상호합의로정하며", rus: "определяются по взаимному согласию", hint_ru: "상호 (взаимный) + 합의 (согласие) + 로 정하며 (определяются как)", topic: "audit", exKor: "추가 비용은 상호합의로정하며 서면으로 확인한다.", exRus: "Расходы определяются по согласию." },
+    { kor: "계약조문의해석", rus: "толкование положений договора", hint_ru: "계약조문 (положения договора) + 의 해석 (толкование)", topic: "audit", exKor: "계약조문의해석에 이견이 있을 경우 법률자문을 구한다.", exRus: "При разногласиях требуется юрконсультация." },
+    { kor: "일부조항이구속력이없거나", rus: "если некоторые положения не имеют обязательной силы", hint_ru: "일부조항 (некоторые положения) + 이 구속력이 없거나 (не имеют силы)", topic: "audit", exKor: "일부조항이구속력이없거나 무효라도 나머지 조항은 유효하다.", exRus: "Недействительные части не отменяют остальные." },
+    // Организации (org)
+    { kor: "대표이사", rus: "генеральный директор", hint_ru: "대표 (представитель) + 이사 (директор)", topic: "org", exKor: "대표이사는 재무제표에 경영자확인서로 서명합니다.", exRus: "Гендиректор подписывает подтверждение руководства." },
+    { kor: "재무담당이사", rus: "финансовый директор", hint_ru: "재무 (финансы) + 담당 (ответственный) + 이사 (директор)", topic: "org", exKor: "재무담당이사는 내부회계관리제도 구축에 책임이 있습니다.", exRus: "Финдиректор отвечает за систему контроля." },
+    { kor: "감사위원회", rus: "комитет по аудиту", hint_ru: "감사 (аудит) + 위원회 (комитет)", topic: "org", exKor: "감사위원회는 외부감사인의 독립성을 감독합니다.", exRus: "Комитет контролирует независимость аудитора." },
+    { kor: "종속회사", rus: "дочерняя компания", hint_ru: "종속 (подчинение) + 회사 (компания)", topic: "org", exKor: "종속회사의 재무제표는 연결재무제표에 포함됩니다.", exRus: "Отчётность дочерней включается в консолидированную." },
+    { kor: "증권선물위원회", rus: "Комиссия по ценным бумагам и фьючерсам", hint_ru: "증권 (ценные бумаги) + 선물 (фьючерсы) + 위원회 (комиссия)", topic: "org", exKor: "증권선물위원회는 자본시장 감독 기관이다.", exRus: "Комиссия надзирает за рынком капитала." },
+    { kor: "경영자확인서", rus: "письменное подтверждение руководства", hint_ru: "경영자 (руководство) + 확인서 (подтверждающий документ)", topic: "org", exKor: "감사인은 경영자확인서를 반드시 받아야 한다.", exRus: "Аудитор обязан получить подтверждение." },
+    { kor: "피투자회사", rus: "инвестируемая компания", hint_ru: "피투자 (инвестируемый) + 회사 (компания)", topic: "org", exKor: "피투자회사의 재무상태를 지분법으로 반영한다.", exRus: "Положение отражается методом долевого участия." },
+    { kor: "주거래은행", rus: "основной банк", hint_ru: "주 (главный) + 거래 (сделка) + 은행 (банк)", topic: "org", exKor: "주거래은행에서 발급한 잔액증명서를 감사증거로 사용한다.", exRus: "Справка от банка используется как доказательство." },
+    { kor: "검찰국세청금융감독원", rus: "прокуратура, налоговая служба, Управление финансового надзора", hint_ru: "검찰 (прокуратура) + 국세청 (налоговая) + 금융감독원 (финнадзор)", topic: "org", exKor: "검찰국세청금융감독원의 조사 요청 시 협조해야 한다.", exRus: "При запросе органов требуется содействие." },
+    { kor: "관계기관으로부터", rus: "от соответствующих органов", hint_ru: "관계기관 (соответствующие органы) + 으로부터 (от)", topic: "org", exKor: "관계기관으로부터 공식문서를 요청할 수 있다.", exRus: "Можно запрашивать документы у органов." },
+    { kor: "수사조사또는감리", rus: "расследование, проверка или надзор", hint_ru: "수사 (расследование) + 조사 (проверка) + 또는 (или) + 감리 (надзор)", topic: "org", exKor: "수사조사또는감리 시 감사조서를 제출해야 할 수 있다.", exRus: "При расследовании предоставляются документы." },
+    { kor: "전자공시", rus: "электронное раскрытие информации", hint_ru: "전자 (электронный) + 공시 (раскрытие)", topic: "org", exKor: "DART 시스템을 통해 전자공시가 이루어집니다.", exRus: "Раскрытие через систему DART." },
+    // Расходы (expenses)
+    { kor: "부가가치세", rus: "налог на добавленную стоимость", hint_ru: "부가 (добавленная) + 가치 (стоимость) + 세 (налог)", topic: "expenses", exKor: "계약 금액에는 부가가치세가 별도이다.", exRus: "Сумма указана без НДС." },
+    { kor: "실비변상적비용", rus: "фактические возмещаемые расходы", hint_ru: "실비 (фактические расходы) + 변상 (компенсация) + 적 비용 (расходы)", topic: "expenses", exKor: "출장비는 실비변상적비용으로 정산한다.", exRus: "Командировочные возмещаются по факту." },
+    { kor: "연체이자율", rus: "ставка за просрочку", hint_ru: "연체 (просрочка) + 이자율 (процентная ставка)", topic: "expenses", exKor: "지급 지연 시 연체이자율이 적용된다.", exRus: "При задержке применяется ставка за просрочку." },
+    { kor: "숙박비", rus: "расходы на проживание", hint_ru: "숙박 (проживание) + 비 (расходы)", topic: "expenses", exKor: "감사인의 숙박비는 의뢰인이 부담한다.", exRus: "Расходы на проживание оплачивает заказчик." },
+    { kor: "조회관련비용", rus: "расходы на запросы", hint_ru: "조회 (запрос) + 관련 (связанные) + 비용 (расходы)", topic: "expenses", exKor: "은행조회관련비용은 실비로 청구한다.", exRus: "Расходы на запросы выставляются по факту." },
+    { kor: "감정료", rus: "гонорар оценщика", hint_ru: "감정 (оценка) + 료 (плата)", topic: "expenses", exKor: "자산 평가 시 감정료가 추가로 발생할 수 있다.", exRus: "При оценке возможны расходы на оценщика." },
+    { kor: "자문료", rus: "консультационный гонорар", hint_ru: "자문 (консультация) + 료 (плата)", topic: "expenses", exKor: "법률자문료는 별도 계약으로 정한다.", exRus: "Гонорар определяется отдельным соглашением." },
+    { kor: "측량비", rus: "расходы на геодезические работы", hint_ru: "측량 (геодезия) + 비 (расходы)", topic: "expenses", exKor: "부동산 감사 시 측량비가 필요할 수 있다.", exRus: "При аудите недвижимости нужны геодезические работы." },
+    // Носители, документы (media)
+    { kor: "인쇄매체", rus: "печатные носители", hint_ru: "인쇄 (печать) + 매체 (носитель)", topic: "media", exKor: "감사보고서는 인쇄매체로도 제출할 수 있다.", exRus: "Отчёт может быть в печатном виде." },
+    { kor: "전자매체", rus: "электронные носители", hint_ru: "전자 (электронный) + 매체 (носитель)", topic: "media", exKor: "전자매체로 제출된 문서는 원본과 동일하게 취급한다.", exRus: "Электронные документы равны оригиналам." },
+    { kor: "유통편집", rus: "распространение и редактирование", hint_ru: "유통 (распространение) + 편집 (редактирование)", topic: "media", exKor: "감사보고서의 유통편집은 감사인의 사전승인이 필요하다.", exRus: "Распространение требует согласия аудитора." },
+    { kor: "출판복제유통편집", rus: "публикация, копирование, распространение, редактирование", hint_ru: "출판 (публикация) + 복제 (копирование) + 유통 (распространение) + 편집 (редактирование)", topic: "media", exKor: "출판복제유통편집 권리는 계약에 명시해야 한다.", exRus: "Права на копирование указываются в договоре." },
+    { kor: "전자매체를통하여", rus: "через электронные носители", hint_ru: "전자매체 (электронные носители) + 를 통하여 (через)", topic: "media", exKor: "전자매체를통하여 감사조서를 공유할 수 있다.", exRus: "Документы передаются через носители." },
+    { kor: "문서의내용을제공하여", rus: "предоставляя содержание документа", hint_ru: "문서 (документ) + 의 내용 (содержание) + 을 제공하여 (предоставляя)", topic: "media", exKor: "문서의내용을제공하여 협업을 진행할 수 있다.", exRus: "Сотрудничество через предоставление содержания." },
+    { kor: "내용을확정하거나배포할때", rus: "при утверждении или распространении содержания", hint_ru: "내용 (содержание) + 을 확정하거나 (утвердить или) + 배포할때 (при распространении)", topic: "media", exKor: "내용을확정하거나배포할때 최종 버전을 확인해야 한다.", exRus: "При распространении проверяется версия." },
+    { kor: "전자형태의관련문서", rus: "соответствующие документы в электронной форме", hint_ru: "전자형태 (электронная форма) + 의 관련문서 (соответствующие документы)", topic: "media", exKor: "전자형태의관련문서도 법적 효력을 가진다.", exRus: "Электронные документы имеют силу." },
+    { kor: "다른형태의문서나매체로변환", rus: "преобразование в документы или носители другой формы", hint_ru: "다른 (другой) + 형태 (форма) + 의 문서나매체 (документы или носители) + 로 변환 (преобразование)", topic: "media", exKor: "다른형태의문서나매체로변환 시 원본성을 유지해야 한다.", exRus: "При преобразовании сохраняется оригинальность." },
+    { kor: "오류등에대해서는", rus: "в отношении ошибок и т.п.", hint_ru: "오류 (ошибка) + 등 (и т.д.) + 에 대해서는 (в отношении)", topic: "media", exKor: "전자문서의 오류등에대해서는 정정 절차를 따른다.", exRus: "Ошибки исправляются по процедуре." },
+    { kor: "이메일등정보통신망을이용하여", rus: "с использованием электронной почты и информационно-коммуникационных сетей", hint_ru: "이메일 (email) + 등 (и т.д.) + 정보통신망 (инфокоммуникационные сети) + 을 이용하여 (используя)", topic: "media", exKor: "이메일등정보통신망을이용하여 공식 통지를 할 수 있다.", exRus: "Уведомления направляются через почту." },
+    { kor: "정보의전자전송으로", rus: "в результате электронной передачи информации", hint_ru: "정보 (информация) + 의 전자전송 (электронная передача) + 으로 (в результате)", topic: "media", exKor: "정보의전자전송으로 발생한 문제는 발신자가 책임진다.", exRus: "Отправитель отвечает за проблемы передачи." },
+    { kor: "사전승인없이", rus: "без предварительного разрешения", hint_ru: "사전 (предварительный) + 승인 (разрешение) + 없이 (без)", topic: "media", exKor: "사전승인없이 감사보고서를 공개할 수 없다.", exRus: "Публикация без разрешения запрещена." },
+    { kor: "전부또는일부를포함시키거나", rus: "включая всё или часть", hint_ru: "전부 (всё) + 또는 (или) + 일부 (часть) + 를 포함시키거나 (включая)", topic: "media", exKor: "전부또는일부를포함시키거나 발췌 시 출처를 명시해야 한다.", exRus: "При включении указывается источник." },
+    // Фразы (phrases)
+    { kor: "상호합의에의하여", rus: "на основании взаимного согласия", hint_ru: "상호 (взаимный) + 합의 (согласие) + 에 의하여 (на основании)", topic: "phrases", exKor: "계약 조건의 변경은 상호합의에의하여만 가능합니다.", exRus: "Изменение возможно только по согласию." },
+    { kor: "업무지원과협조", rus: "поддержка и сотрудничество в работе", hint_ru: "업무 (работа) + 지원 (поддержка) + 과 (и) + 협조 (сотрудничество)", topic: "phrases", exKor: "감사 수행을 위해 업무지원과협조가 필요하다.", exRus: "Аудит требует поддержки и сотрудничества." },
+    { kor: "업무범위", rus: "объём работ", hint_ru: "업무 (работа) + 범위 (объём)", topic: "phrases", exKor: "계약서에 업무범위를 명확히 기재해야 한다.", exRus: "В договоре указывается объём работ." },
+    { kor: "합리적예상", rus: "разумное предположение", hint_ru: "합리적 (разумный) + 예상 (предположение)", topic: "phrases", exKor: "합리적예상에 기반하여 감사절차를 설계한다.", exRus: "Процедуры строятся на разумных предположениях." },
+    { kor: "재무제표에영향을미칠수있는", rus: "которые могут повлиять на финансовую отчётность", hint_ru: "재무제표 (отчётность) + 에 영향을 미칠 수 있는 (могут повлиять на)", topic: "phrases", exKor: "중요한 사건은 재무제표에영향을미칠수있는 여부를 평가한다.", exRus: "Оценивается влияние событий на отчётность." },
+    { kor: "국내외관련법규상", rus: "в соответствии с соответствующими нормативными актами страны и зарубежья", hint_ru: "국내외 (внутри и за рубежом) + 관련법규 (соответствующие нормы) + 상 (в соответствии)", topic: "phrases", exKor: "국내외관련법규상 요구사항을 준수해야 한다.", exRus: "Соблюдаются требования законов." },
+    { kor: "회생절차", rus: "процедура реабилитации (банкротство)", hint_ru: "회생 (возрождение) + 절차 (процедура)", topic: "phrases", exKor: "회생절차 중인 기업의 감사는 특별주의가 필요하다.", exRus: "Аудит в процедуре реабилитации требует внимания." }
+];
+
+// ==================== ТЕМЫ ====================
+const TOPICS = {
+    law_duty: "⚖️ Законы", time: "⏳ Сроки", finance: "📊 Финансы",
+    audit: "📋 Аудит", org: "🏛️ Органы", expenses: "💰 Расходы",
+    media: "📁 Документы", phrases: "💬 Фразы", favorites: "⭐ Избранное"
+};
+
+
+
+// ==================== ЦИТАТЫ (ПОЛНОСТЬЮ ПРОНУМЕРОВАНЫ) ====================
+const quotes = [
+    // 1. Цитата
+    { kor: "정확한 용어가 계약의 힘입니다", rus: "Точный термин — сила договора" },
+    // 2. Цитата
+    { kor: "감사는 신뢰의 언어다", rus: "Аудит — это язык доверия" },
+    // 3. Цитата
+    { kor: "계약서 한 줄이 평판을 만든다", rus: "Одна строка договора создаёт репутацию" },
+    // 4. Цитата
+    { kor: "투명한 보고, 정확한 감사", rus: "Прозрачная отчётность, точный аудит" },
+    // 5. Цитата
+    { kor: "리스크를 알면 기회가 보인다", rus: "Знаешь риск — видишь возможность" },
+    // 6. Цитата
+    { kor: "법은 계약의 등대다", rus: "Закон — маяк договора" },
+    // 7. Цитата
+    { kor: "회계는 과거를, 감사는 미래를 본다", rus: "Бухгалтерия смотрит в прошлое, аудит — в будущее" },
+    // 8. Цитата
+    { kor: "내가 법을 해석하면, 법은 정의로워진다.", rus: "Когда я толкую закон, он становится справедливым." },
+    // 9. Цитата
+    { kor: "왜 감사 기한을 무시하면 안 되나요? 기한은 항상 승소 준비가 되어 있으니까요.", rus: "Почему нельзя игнорировать сроки? Потому что они всегда готовы к судебному спору." },
+    // 10. Цитата
+    { kor: "재무제표 조작 알아? 내가 다 정리했어.", rus: "Знаешь манипуляции с отчётностью? Я их все ликвидировал." },
+    // 11. Цитата
+    { kor: "감사 중에 형식적 오류를 발견했더니, 위원회가 발칵 뒤집혔어.", rus: "Нашёл формальную ошибку при аудите — комитет переполошился." },
+    // 12. Цитата
+    { kor: "왜 내 문서는 완벽하지? 내가 다듬었거든.", rus: "Знаешь, почему мои документы безупречны? Потому что я их отшлифовал." },
+    // 13. Цитата
+    { kor: "어느 날 한 트레이더가 적자 사업부를 인수했는데, 지금은 수익 중심이 됐어.", rus: "Однажды трейдер купил убыточное подразделение, а теперь это центр прибыли." },
+    // ==================== Цитаты в стиле "Дэейсона Стеэтхэма" ====================
+    // 14. Оригинал: "Провёл жёсткий аудит должника — теперь он спит спокойно."
+    { kor: "채무자에게 강도 높은 감사를 실시해서 그가 편히 잠들게 했어.", rus: "Провёл жёсткий аудит должника — теперь он спит спокойно." },
+    // 15. Оригинал: "Справился со сложными контрактами — и ты сможешь."
+    { kor: "어려운 계약을 해내고 나니, 너도 할 수 있어.", rus: "Справился со сложными контрактами — и ты сможешь." },
+    // 16. Оригинал: "Жирные остатки на счетах часто превышают лимиты."
+    { kor: "뚱뚱한 잔액은 자주 한도를 초과해.", rus: "Жирные остатки на счетах часто превышают лимиты." },
+    // 17. Оригинал: "Хороший аудитор не станет скрывать плохие активы."
+    { kor: "좋은 감사인은 나쁜 자산을 숨기지 않아.", rus: "Хороший аудитор не станет скрывать плохие активы." },
+    // 18. Оригинал: "Лучше иметь резервный фонд, чем полагаться друг на друга."
+    { kor: "서로를 믿기보다 예비 자금을 갖는 게 낫다.", rus: "Лучше иметь резервный фонд, чем полагаться друг на друга." },
+    // 19. Оригинал: "Одна ошибка в отчёте — и вся отчётность неверна."
+    { kor: "보고서에 한 번 오류가 나면, 전체 보고서가 틀려.", rus: "Одна ошибка в отчёте — и вся отчётность неверна." },
+    // 20. Оригинал: "Лучше просрочить контракт, чем задержать зарплату."
+    { kor: "임금 지연보다 계약 기한 초과가 낫다.", rus: "Лучше просрочить контракт, чем задержать зарплату." },
+    // 21. Оригинал: "Не проверяй — и тебя не проверят. Не аудируй — и не проаудируют."
+    { kor: "감사하지 마라, 그러면 감사를 받지 않을 것이다. 조사하지 마라, 그러면 조사받지 않을 것이다.", rus: "Не проверяй — и тебя не проверят. Не аудируй — и не проаудируют." },
+    // 22. Оригинал: "Срок сдачи сегодня? Сделаю послезавтра."
+    { kor: "제출 기한이 오늘? 내일 모레 하지.", rus: "Срок сдачи сегодня? Сделаю послезавтра." },
+    // 23. Оригинал: "Запутался в отчётности — вернись к первичным документам."
+    { kor: "재무제표가 헷갈리면, 원장으로 돌아가.", rus: "Запутался в отчётности — вернись к первичным документам." },
+    // 24. Оригинал: "Если с убытками не берут, то и с прибылью туда не ходи."
+    { kor: "적자 회사를 안 받아준다면, 흑자 회사도 가지 마.", rus: "Если с убытками не берут, то и с прибылью туда не ходи." },
+    // 25. Оригинал: "Аудитор и рынок проверяет, и порядок соблюдает."
+    { kor: "감사인은 시장도 감시하고 질서도 지킨다.", rus: "Аудитор и рынок проверяет, и порядок соблюдает." },
+    // 26. Оригинал: "Договор без подписи — просто бумажка."
+    { kor: "서명이 없는 계약은 그냥 휴지일 뿐이다.", rus: "Договор без подписи — просто бумажка." },
+    // 27. Оригинал: "Лучше сдать отчёт с опозданием, но без ошибок, чем вовремя с искажениями."
+    { kor: "제때 잘못된 보고서를 내는 것보다 늦게라도 고쳐 내는 게 낫다.", rus: "Лучше сдать отчёт с опозданием, но без ошибок, чем вовремя с искажениями." },
+    // 28. Оригинал: "Ошибся — исправь, исправил — перепроверь."
+    { kor: "실수했으면 고쳐라, 고쳤으면 다시 검증하라.", rus: "Ошибся — исправь, исправил — перепроверь." },
+    // 29. Оригинал: "Независимость аудитора храни смолоду, а доказательства – в холоде."
+    { kor: "감사인의 독립성은 젊을 때 지키고, 증거는 차갑게 보관하라.", rus: "Независимость аудитора храни смолоду, а доказательства – в холоде." },
+    // 30. Оригинал: "Ты ушла, не приведя документы в порядок, а я дышу оставшимися следами."
+    { kor: "너는 문서를 정리하지 않고 떠났지만, 나는 그 잔여 증거를 호흡하듯 분석했다.", rus: "Ты ушла, не приведя документы в порядок, а я дышу оставшимися следами." },
+    // 31. Оригинал: "Хороший бюджет на дороге не валяется."
+    { kor: "좋은 예산은 길바닥에 굴러다니지 않아.", rus: "Хороший бюджет на дороге не валяется." },
+    // 32. Оригинал: "Для аудитора 'спасибо' – лишь масло на хлеб."
+    { kor: "감사인에게 '고맙습니다'는 빵에 발라 먹는 양념일 뿐이다.", rus: "Для аудитора 'спасибо' – лишь масло на хлеб." },
+    // 33. Оригинал: "Не рассчитывай на договор – исполнение может и не состояться."
+    { kor: "계약서에 의존하지 마라, 이행은 별개니까.", rus: "Не рассчитывай на договор – исполнение может и не состояться." },
+    // 34. Оригинал: "Сдал отчёт в последний день – назавтра он уже просрочен."
+    { kor: "보고서를 마감일에 제출하면 다음 날 이미 연체다.", rus: "Сдал отчёт в последний день – назавтра он уже просрочен." },
+    // 35. Оригинал: "Если есть на свете рай, то это налоговая служба."
+    { kor: "세상에 천국이 있다면, 그곳은 국세청이다.", rus: "Если есть на свете рай, то это налоговая служба." },
+    // 36. Оригинал: "Лучше светлый отчёт о прибылях и убытках, чем тёмное будущее."
+    { kor: "어두운 미래보다 맑은 손익계산서가 낫다.", rus: "Лучше светлый отчёт о прибылях и убытках, чем тёмное будущее." },
+    // 37. Оригинал: "Почему время нельзя купить в аптеке? Потому что время не лечит."
+    { kor: "왜 연체 기한을 약국에서 살 수 없을까? 시간은 치료하지 않으니까.", rus: "Почему время нельзя купить в аптеке? Потому что время не лечит." },
+    // 38. Оригинал: "Знаешь консолидированную отчётность? Я её объединил."
+    { kor: "연결 재무제표 알아? 내가 통합했어.", rus: "Знаешь консолидированную отчётность? Я её объединил." },
+    // 39. Оригинал: "Приехал на проверку – а там одни дилетанты."
+    { kor: "현장 감리 나가자, 거기엔 아마추어들 뿐이더라.", rus: "Приехал на проверку – а там одни дилетанты." },
+    // 40. Оригинал: "Утром встаёт не только солнце, но и аудитор, правда, ребята?"
+    { kor: "아침에 해뿐만 아니라 감사인도 일어난다, 맞지?", rus: "Утром встаёт не только солнце, но и аудитор, правда, ребята?" },
+    // 41. Оригинал: "Почему аудит платный? Потому что бесплатно только ничего не делание."
+    { kor: "감사 수수료가 왜 비싸? 결과는 무료일 리 없잖아.", rus: "Почему аудит платный? Потому что бесплатно только ничего не делание." },
+    // 42. Оригинал: "Лучше с коллегами-аудиторами на совещании, чем с внешним консультантом по магазинам."
+    { kor: "감사인 동료와 회의하는 게 낫지, 외부 컨설턴트와 쇼핑하는 것보다.", rus: "Лучше с коллегами-аудиторами на совещании, чем с внешним консультантом по магазинам." },
+    // 43. Оригинал: "Доходы не главное. Главное – денежный поток."
+    { kor: "수익이 전부가 아니다. 중요한 것은 현금 흐름이다.", rus: "Доходы не главное. Главное – денежный поток." },
+    // 44. Оригинал: "Одна ошибка – опечатка, пять ошибок – манипуляция."
+    { kor: "한 가지 오류는 착오, 다섯 가지 오류는 조작이야.", rus: "Одна ошибка – опечатка, пять ошибок – манипуляция." },
+    // 45. Оригинал: "Если аудит обошёл контроль – значит, система управления отказала."
+    { kor: "감사 계획을 무시했다면, 통제 시스템이 고장 난 거야.", rus: "Если аудит обошёл контроль – значит, система управления отказала." },
+    // 46. Оригинал: "Пока вы накапливаете бумаги, я их классифицирую. А потом тоже накапливаю."
+    { kor: "당신이 문서를 쌓는 동안 나는 분류한다. 그리고 나서 나도 쌓는다.", rus: "Пока вы накапливаете бумаги, я их классифицирую. А потом тоже накапливаю." },
+    // 47. Оригинал: "Аудит как дождь – даже когда заканчивается, всё равно продолжается."
+    { kor: "감사는 비와 같아서, 끝나도 계속돼.", rus: "Аудит как дождь – даже когда заканчивается, всё равно продолжается." },
+    // 48. Оригинал: "Спорить из-за копеек – это очень низко."
+    { kor: "작은 금액을 놓고 싸우는 건 정말 저급하다.", rus: "Спорить из-за копеек – это очень низко." },
+    // 49. Оригинал: "Купил бухгалтерскую программу, а работы только прибавилось."
+    { kor: "회계 소프트웨어를 샀는데, 오히려 일이 늘었다.", rus: "Купил бухгалтерскую программу, а работы только прибавилось." },
+    // 50. Оригинал: "Не тяните с аудитом, лучше работайте стоя."
+    { kor: "감사 기한을 아프지 말고 연장해라, 차라리 서서 일해라.", rus: "Не тяните с аудитом, лучше работайте стоя." },
+    // 51. Оригинал: "Как называют аудитора, который работает один? Одиночка."
+    { kor: "혼자 일하는 감사인을 뭐라고 부르지? 외톨이 감사인.", rus: "Как называют аудитора, который работает один? Одиночка." },
+    // 52. Оригинал: "Хватит париться, живи как аудит – по правилам, но с душой."
+    { kor: "스트레스 받지 마, 감사는 인생처럼 흘러가.", rus: "Хватит париться, живи как аудит – по правилам, но с душой." },
+    // 53. Оригинал: "Запиши в договоре, а то забудешь!"
+    { kor: "계약서에 적어둬, 안 그러면 까먹어!", rus: "Запиши в договоре, а то забудешь!" },
+    // 54. Оригинал: "Когда я упал на бирже, аналитики загадали желание."
+    { kor: "내가 주식에서 폭락했더니, 분석가들이 소원을 빌었어.", rus: "Когда я упал на бирже, аналитики загадали желание." },
+    // 55. Оригинал: "Купил убыточную компанию, теперь она прибыльная."
+    { kor: "적자 기업을 인수했더니, 이제는 흑자 기업이 됐어.", rus: "Купил убыточную компанию, теперь она прибыльная." },
+    // 56. Оригинал: "Если аудитор сказал 'на следующей неделе', жди следующей недели, не напоминай каждый день."
+    { kor: "감사인이 '다음 주'라고 하면, 다음 주를 기다려라, 매일 재촉하지 말고.", rus: "Если аудитор сказал 'на следующей неделе', жди следующей недели, не напоминай каждый день." },
+    // 57. Оригинал: "Мой контрагент обанкротился – теперь он мне не контрагент. Ведь надёжные партнёры на дороге не валяются."
+    { kor: "내 계약 상대방이 파산했어, 이제 그를 믿지 않아. 계약자는 길바닥에 널려있지 않으니까.", rus: "Мой контрагент обанкротился – теперь он мне не контрагент. Ведь надёжные партнёры на дороге не валяются." },
+    // 58. Оригинал: "Прежде чем собирать аудиторские доказательства, убедись, что все риски устранены."
+    { kor: "감사 증거를 수집하기 전에, 모든 위험이 제거되었는지 확인해라.", rus: "Прежде чем собирать аудиторские доказательства, убедись, что все риски устранены." },
+    // 59. Оригинал: "Радость прибыли пусть не затмевает мысли о рисках."
+    { kor: "수익의 기쁨이 리스크 관리를 가리지 않도록 하라.", rus: "Радость прибыли пусть не затмевает мысли о рисках." },
+    // 60. Оригинал: "Давая совет крупному клиенту, помни о своей юридической ответственности."
+    { kor: "큰 회사에 법률 자문을 할 때는 자신의 책임 범위를 기억하라.", rus: "Давая совет крупному клиенту, помни о своей юридической ответственности." },
+    // 61. Оригинал: "Часто те, кого считаешь врагами-проверяющими, на самом деле помогают исправить ошибки."
+    { kor: "종종 당신이 적이라고 생각하는 감독기관은 사실 도움이 된다.", rus: "Часто те, кого считаешь врагами-проверяющими, на самом деле помогают исправить ошибки." },
+    // 62. Оригинал: "Хороший аудитор укажет на недостатки отчётности, а не будет её хвалить."
+    { kor: "좋은 감사인은 잘못을 지적하며 칭찬만 하지 않는다.", rus: "Хороший аудитор укажет на недостатки отчётности, а не будет её хвалить." },
+    // 63. Оригинал: "Время лечит, но сроки исковой давности ждать не будут."
+    { kor: "시간은 치유하지만, 공소시효는 기다려주지 않는다.", rus: "Время лечит, но сроки исковой давности ждать не будут." },
+    // 64. Оригинал: "Если трудно ответить на вопрос следователя, лучше промолчать."
+    { kor: "답하기 어려운 질문에는 침묵이 최선의 답이다.", rus: "Если трудно ответить на вопрос следователя, лучше промолчать." },
+    // 65. Оригинал: "Заботься о своей прибыли, но не забывай об интересах акционеров и общества."
+    { kor: "자신의 이익을 추구하되, 주주와 사회의 이익도 잊지 말라.", rus: "Заботься о своей прибыли, но не забывай об интересах акционеров и общества." },
+    // 66. Оригинал: "Если победишь конфликт интересов, никто не сломает твою независимость."
+    { kor: "이해충돌을 극복하면 누구도 당신의 독립성을 무너뜨릴 수 없다.", rus: "Если победишь конфликт интересов, никто не сломает твою независимость." },
+    // 67. Оригинал: "Аудит требует времени, но главное — полюбить свою работу, иначе сгоришь."
+    { kor: "감사는 시간과 정성을 요구하지만, 그 일을 사랑해야 한다.", rus: "Аудит требует времени, но главное — полюбить свою работу, иначе сгоришь." },
+    // 68. Оригинал: "Пустые обещания в договоре никого ещё не спасали."
+    { kor: "실행 없는 계약 조항은 아무도 구하지 못한다.", rus: "Пустые обещания в договоре никого ещё не спасали." },
+    // 69. Оригинал: "Будь начеку, и ты найдёшь слабые места в системе контроля."
+    { kor: "항상 경계하라, 그러면 내부통제의 허점을 찾을 수 있다.", rus: "Будь начеку, и ты найдёшь слабые места в системе контроля." },
+    // 70. Оригинал: "Мудрость приходит с опытом, а опыт — из трудных ошибок аудита."
+    { kor: "지혜는 경험에서 오고, 경험은 힘든 실수에서 태어난다.", rus: "Мудрость приходит с опытом, а опыт — из трудных ошибок аудита." },
+    // 71. Оригинал: "От налоговой не спрячешься."
+    { kor: "국세청의 눈은 피할 수 없다.", rus: "От налоговой не спрячешься." },
+    // 72. Оригинал: "В аудите надо уметь расставлять приоритеты рисков."
+    { kor: "감사 절차에서 우선순위를 정하는 법을 알아야 한다.", rus: "В аудите надо уметь расставлять приоритеты рисков." },
+    // 73. Оригинал: "Многие жалуются на оформление отчёта, но на суть — никто."
+    { kor: "보고서 겉모습에 불평하는 이 많지만, 내용에 불평하는 이는 없다.", rus: "Многие жалуются на оформление отчёта, но на суть — никто." },
+    // 74. Оригинал: "Не важна обложка отчёта, важно — что внутри баланса."
+    { kor: "표지는 중요하지 않다. 중요한 것은 재무제표의 내용이다.", rus: "Не важна обложка отчёта, важно — что внутри баланса." },
+    // 75. Оригинал: "Начиная работу, думай не только о скорости, но и о качестве результата."
+    { kor: "업무를 시작할 때 속도만큼 질도 생각하라.", rus: "Начиная работу, думай не только о скорости, но и о качестве результата." },
+    // 76. Оригинал: "Спокойствие сильнее эмоций. Молчание громче крика."
+    { kor: "평정심은 감정보다 강하다. 침묵은 외침보다 크다.", rus: "Спокойствие сильнее эмоций. Молчание громче крика." },
+    // 77. Оригинал: "Независимость — это когда есть чем пожертвовать и чем доказать свою правоту."
+    { kor: "진정한 독립성은 무시할 수 있는 권력과 증명할 수 있는 능력이다.", rus: "Независимость — это когда есть чем пожертвовать и чем доказать свою правоту." },
+    // 78. Оригинал: "Если пришёл аудировать, так аудируй! Лучше 4 часа плотно, чем 8 вполсилы."
+    { kor: "감사하러 왔으면 제대로 하라! 4시간 집중이 8시간 어영부영보다 낫다.", rus: "Если пришёл аудировать, так аудируй! Лучше 4 часа плотно, чем 8 вполсилы." }
+];
+
+// Функция для случайной цитаты (не сохраняется в localStorage)
+function setRandomQuote() {
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    const quote = quotes[randomIndex];
+    document.getElementById('dailyQuote').innerHTML = `"${quote.kor}"<br>— ${quote.rus}`;
+}
+
+// Функция показа цитаты дня (циклически)
+function showDailyQuote() {
+    const today = new Date().toLocaleDateString('ru-RU');
+    const stored = localStorage.getItem('auditLexQuote');
+    if (stored) {
+        try {
+            const { date, index } = JSON.parse(stored);
+            if (date === today) {
+                const quote = quotes[index % quotes.length];
+                document.getElementById('dailyQuote').innerHTML = `"${quote.kor}"<br>— ${quote.rus}`;
+                return;
+            }
+        } catch(e) {}
+    }
+    let newIndex = 0;
+    if (stored) {
+        try {
+            const { index } = JSON.parse(stored);
+            newIndex = (index + 1) % quotes.length;
+        } catch(e) {}
+    }
+    const quote = quotes[newIndex];
+    document.getElementById('dailyQuote').innerHTML = `"${quote.kor}"<br>— ${quote.rus}`;
+    localStorage.setItem('auditLexQuote', JSON.stringify({ date: today, index: newIndex }));
+}
+
+// ==================== СОСТОЯНИЕ ====================
+const state = {
+    topic: "law_duty",
+    cards: [],
+    index: 0,
+    favIds: new Set(),
+    search: "",
+    transOpen: false,
+    exOpen: false,
+    theme: localStorage.getItem("auditTheme") || "light"
+};
+
+// DOM элементы
+const el = {
+    topics: document.getElementById("topicsContainer"),
+    term: document.getElementById("koreanTerm"),
+    hint: document.getElementById("englishHint"),
+    transToggle: document.getElementById("transToggle"),
+    transContent: document.getElementById("transContent"),
+    transText: document.getElementById("transText"),
+    exPreview: document.getElementById("exPreview"),
+    exKor: document.getElementById("exKor"),
+    exExpanded: document.getElementById("exExpanded"),
+    exRu: document.getElementById("exRu"),
+    prev: document.getElementById("prevBtn"),
+    next: document.getElementById("nextBtn"),
+    fav: document.getElementById("favBtn"),
+    pFill: document.getElementById("progressFill"),
+    pText: document.getElementById("progressText"),
+    tToggle: document.getElementById("themeToggle"),
+    rand: document.getElementById("randomBtn"),
+    reset: document.getElementById("resetBtn")
+};
+
+function getCardId(card) { return fullGlossary.findIndex(c => c.kor === card.kor && c.rus === card.rus); }
+
+function updateActiveTopicButton(topicKey) {
+    document.querySelectorAll(".topic-btn").forEach(btn => {
+        const btnTopic = Object.keys(TOPICS).find(k => TOPICS[k] === btn.textContent);
+        if (btnTopic === topicKey) btn.classList.add("active");
+        else btn.classList.remove("active");
+    });
+}
+
+function updateUI() {
+    if (!state.cards.length) {
+        el.term.textContent = "📭 Нет результатов";
+        el.hint.textContent = "💡 измените запрос";
+        el.transText.textContent = "";
+        el.exKor.textContent = "—";
+        el.exRu.textContent = "—";
+        el.pFill.style.width = "0%";
+        el.pText.textContent = "0 / 0";
+        closeAll();
+        return;
+    }
+    const card = state.cards[state.index];
+    el.term.textContent = card.kor;
+    el.hint.innerHTML = `💡 ${card.hint_ru || card.rus}`;
+    el.transText.textContent = card.rus;
+    el.exKor.textContent = card.exKor;
+    el.exRu.textContent = card.exRus;
+    
+    const pct = ((state.index + 1) / state.cards.length) * 100;
+    el.pFill.style.width = `${pct}%`;
+    el.pText.textContent = `${state.index + 1} / ${state.cards.length}`;
+    
+    const id = getCardId(card);
+    if (state.favIds.has(id)) {
+        el.fav.innerHTML = "★";
+        el.fav.classList.add("fav-active");
+        el.fav.title = "Удалить из избранного";
+    } else {
+        el.fav.innerHTML = "☆";
+        el.fav.classList.remove("fav-active");
+        el.fav.title = "В избранное";
+    }
+    closeAll();
+    
+    if (state.search.trim() !== "") {
+        const newTopic = card.topic;
+        if (state.topic !== newTopic) {
+            state.topic = newTopic;
+            updateActiveTopicButton(state.topic);
+        }
+    }
+}
+
+function closeAll() {
+    state.transOpen = false; el.transContent.classList.remove("open"); el.transToggle.classList.remove("open"); 
+    if(el.transToggle.querySelector('.accordion-icon')) el.transToggle.querySelector('.accordion-icon').textContent = "▼";
+    state.exOpen = false; el.exExpanded.classList.remove("open"); 
+    if(el.exPreview.querySelector('.example-hint')) el.exPreview.querySelector('.example-hint').textContent = "▶ Показать перевод примера";
+}
+
+function filterCards() {
+    let cards = fullGlossary;
+    const isSearchActive = state.search.trim() !== "";
+    
+    if (!isSearchActive && state.topic !== "favorites") {
+        cards = cards.filter(c => c.topic === state.topic);
+    } else if (state.topic === "favorites" && !isSearchActive) {
+        cards = Array.from(state.favIds).map(id => fullGlossary[id]).filter(Boolean);
+    } else if (isSearchActive) {
+        const q = state.search.toLowerCase();
+        cards = cards.filter(c => c.kor.toLowerCase().includes(q) || c.rus.toLowerCase().includes(q) || (c.hint_ru && c.hint_ru.toLowerCase().includes(q)));
+    }
+    
+    if (isSearchActive && cards.length > 0) {
+        const firstTopic = cards[0].topic;
+        if (state.topic !== firstTopic) {
+            state.topic = firstTopic;
+            updateActiveTopicButton(state.topic);
+        }
+    } else if (!isSearchActive && state.topic !== "favorites") {
+        updateActiveTopicButton(state.topic);
+    }
+    
+    state.cards = cards;
+    if (state.index >= cards.length && cards.length > 0) state.index = 0;
+    if (cards.length === 0) state.index = 0;
+    updateUI();
+}
+
+function toggleTrans() { if(!state.cards.length) return; state.transOpen=!state.transOpen; el.transContent.classList.toggle('open', state.transOpen); el.transToggle.classList.toggle('open', state.transOpen); if(el.transToggle.querySelector('.accordion-icon')) el.transToggle.querySelector('.accordion-icon').textContent = state.transOpen ? "▲" : "▼"; }
+function toggleEx() { if(!state.cards.length) return; state.exOpen=!state.exOpen; el.exExpanded.classList.toggle('open', state.exOpen); if(el.exPreview.querySelector('.example-hint')) el.exPreview.querySelector('.example-hint').textContent = state.exOpen ? "▲ Скрыть перевод" : "▶ Показать перевод примера"; }
+function next() { if(!state.cards.length) return; state.index=(state.index+1)%state.cards.length; updateUI(); }
+function prev() { if(!state.cards.length) return; state.index=(state.index-1+state.cards.length)%state.cards.length; updateUI(); }
+function rand() {
+    if(!state.cards.length) return;
+    state.index = Math.floor(Math.random() * state.cards.length);
+    updateUI();
+    setRandomQuote();
+}
+
+function toggleFav() {
+    if(!state.cards.length) return;
+    const id = getCardId(state.cards[state.index]);
+    if (state.favIds.has(id)) state.favIds.delete(id);
+    else state.favIds.add(id);
+    localStorage.setItem("auditFav_v5", JSON.stringify([...state.favIds]));
+    if (state.topic === "favorites") filterCards();
+    else updateUI();
+}
+
+function loadFav() {
+    const saved = localStorage.getItem("auditFav_v5");
+    if (saved) { try { state.favIds = new Set(JSON.parse(saved)); } catch(e) {} }
+}
+
+function buildTopics() {
+    el.topics.innerHTML = "";
+    Object.entries(TOPICS).forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.className = `topic-btn${state.topic===key?" active":""}`;
+        if(key==="favorites") btn.classList.add("topic-star");
+        btn.textContent = label;
+        btn.onclick = () => {
+            state.topic = key;
+            state.search = "";
+            document.querySelectorAll(".topic-btn").forEach(b=>b.classList.remove("active"));
+            btn.classList.add("active");
+            filterCards();
+        };
+        el.topics.appendChild(btn);
+    });
+}
+
+function init() {
+    if(state.theme==="dark") document.body.classList.add("dark");
+    loadFav();
+    buildTopics();
+    filterCards();
+    showDailyQuote();
+    
+    el.prev.onclick = prev; el.next.onclick = next; el.fav.onclick = toggleFav;
+    el.transToggle.onclick = toggleTrans;
+    el.exPreview.onclick = toggleEx;
+    el.rand.onclick = rand;
+    el.reset.onclick = () => { state.index=0; updateUI(); };
+    
+    el.tToggle.onclick = () => {
+        document.body.classList.toggle("dark");
+        state.theme = document.body.classList.contains("dark") ? "dark" : "light";
+        localStorage.setItem("auditTheme", state.theme);
+    };
+    
+    document.onkeydown = e => {
+        if (e.target.tagName === "INPUT") return;
+        if (e.key==="ArrowRight") next();
+        else if (e.key==="ArrowLeft") prev();
+        else if (e.key===" ") { e.preventDefault(); toggleTrans(); }
+        else if (e.key==="Enter") toggleEx();
+    };
+    
+    el.topics.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > 0) {
+            e.preventDefault();
+            el.topics.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
